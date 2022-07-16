@@ -28,6 +28,11 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get install wget
+          
+      - name: Prepare gh-pages
+        run: |
+          # copy template back to pages
+          cp -f -r ./gh-pages-template/* ./gh-pages/
 
       - name: Cache AUR
         run: |
