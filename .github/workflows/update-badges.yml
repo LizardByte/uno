@@ -1,0 +1,55 @@
+name: Update badges
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # every day at midnight
+  workflow_dispatch:
+
+jobs:
+  cache:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Checkout gh-pages
+        uses: actions/checkout@v3
+        with:
+          ref: gh-pages
+          path: gh-pages
+          persist-credentials: false  # otherwise, the token used is the GITHUB_TOKEN, instead of the personal token
+          fetch-depth: 0  # otherwise, will fail to push refs to dest repo
+
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get install wget
+
+      - name: Cache AUR
+        run: |
+          # create and move to directory
+          mkdir -p ./gh-pages/aur
+          cd ./gh-pages/aur
+          
+          # download aur information
+          wget -O sunshine-git.json "https://aur.archlinux.org/rpc?v=5&type=info&arg=sunshine-git"
+          wget -O sunshine.json "https://aur.archlinux.org/rpc?v=5&type=info&arg=sunshine"
+          
+          # print aur information
+          cat ./sunshine-git.json
+          cat ./sunshine.json
+
+      - name: Deploy to gh-pages
+        uses: actions-js/push@v1.3
+        with:
+          github_token: ${{ secrets.GH_BOT_TOKEN }}
+          author_email: ${{ secrets.GH_BOT_EMAIL }}
+          author_name: ${{ secrets.GH_BOT_NAME }}
+          directory: gh-pages
+          branch: gh-pages
+          force: true
+          message: automatic-update-${{ steps.date.outputs.date }}
