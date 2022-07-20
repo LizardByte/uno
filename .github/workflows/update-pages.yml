@@ -1,4 +1,4 @@
-name: Update badges
+name: Update
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  cache:
+  update:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,28 +25,30 @@ jobs:
         id: date
         run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
 
-      - name: Install dependencies
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Python dependencies
         run: |
-          sudo apt-get install wget
-          
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
       - name: Prepare gh-pages
         run: |
+          # empty contents
+          rm -f -r ./gh-pages/*
+          
           # copy template back to pages
           cp -f -r ./gh-pages-template/* ./gh-pages/
 
-      - name: Cache AUR
+      - name: Update
+        working-directory: gh-pages
         run: |
-          # create and move to directory
-          mkdir -p ./gh-pages/aur
-          cd ./gh-pages/aur
-          
-          # download aur information
-          wget -O sunshine-git.json "https://aur.archlinux.org/rpc?v=5&type=info&arg=sunshine-git"
-          wget -O sunshine.json "https://aur.archlinux.org/rpc?v=5&type=info&arg=sunshine"
-          
-          # print aur information
-          cat ./sunshine-git.json
-          cat ./sunshine.json
+          python ../update.py \
+          --github_repository_owner ${{ secrets.GH_ORG_NAME }} \
+          --github_auth_token ${{ secrets.GH_BOT_TOKEN }}
 
       - name: Deploy to gh-pages
         uses: actions-js/push@v1.3
