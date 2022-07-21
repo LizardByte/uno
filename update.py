@@ -70,7 +70,7 @@ def update_aur():
         write_json_files(file_path=file_path, data=data)
 
 
-def update_banners():
+def update_github():
     """
     Cache and update GitHub Repo banners.
     """
@@ -78,12 +78,23 @@ def update_banners():
     response = requests.get(f'https://api.github.com/users/{args.github_repository_owner}/repos')
     repos = response.json()
 
+    file_path = os.path.join('github', 'repos')
+    write_json_files(file_path=file_path, data=repos)
+
     headers = dict(
         Authorization=f'token {args.github_auth_token}'
     )
     url = 'https://api.github.com/graphql'
 
     for repo in repos:
+        # languages
+        response = requests.get(repo['languages_url'])
+        languages = response.json()
+
+        file_path = os.path.join('github', 'languages', repo['name'])
+        write_json_files(file_path=file_path, data=languages)
+
+        # openGraphImages
         query = """
         {
           repository(owner: "%s", name: "%s") {
@@ -106,16 +117,16 @@ if __name__ == '__main__':
     parser.add_argument('--github_repository_owner', type=str, required=False,
                         default=os.getenv('GITHUB_REPOSITORY_OWNER'), help='GitHub Username')
     parser.add_argument('--github_auth_token', type=str, required=False, default=os.getenv('GH_AUTH_TOKEN'),
-                        help='GitHub Token, requires repo scope.')
+                        help='GitHub Token, no scope selection is necessary.')
     parser.add_argument('-i', '--indent_json', action='store_true', help='Indent json files.')
 
     args = parser.parse_args()
     args.indent = 4 if args.indent_json else None
 
     if not args.github_repository_owner or not args.github_auth_token:
-        raise SystemExit('Secrets not supplied. Required environment variables are "GITHUB_REPOSITORY_OWNER", and'
-                         '"GH_AUTH_TOKEN". They should be placed in org/repo secrets and passed in as arguments if'
+        raise SystemExit('Secrets not supplied. Required environment variables are "GITHUB_REPOSITORY_OWNER", and '
+                         '"GH_AUTH_TOKEN". They should be placed in org/repo secrets and passed in as arguments if '
                          'using github, or ".env" file if running local.')
 
     update_aur()
-    update_banners()
+    update_github()
