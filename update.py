@@ -112,9 +112,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     args.indent = 4 if args.indent_json else None
 
-    if not args.github_username or not args.github_auth_token:
-        raise SystemExit('Secrets not supplied. Required secrets are "github_username", and "GITHUB_AUTH_TOKEN".'
-                         'They should be placed in org/repo secrets if using github, or ".env" file if running local.')
+    if not args.github_repository_owner or not args.github_auth_token:
+        raise SystemExit('Secrets not supplied. Required environment variables are "GITHUB_REPOSITORY_OWNER", and'
+                         '"GH_AUTH_TOKEN". They should be placed in org/repo secrets and passed in as arguments if'
+                         'using github, or ".env" file if running local.')
 
     update_aur()
     update_banners()
