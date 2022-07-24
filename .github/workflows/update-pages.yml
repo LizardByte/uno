@@ -65,7 +65,7 @@ jobs:
             ${{ github.workspace }}/gh-pages
 
       - name: Deploy to gh-pages
-        if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') || (github.event_name == 'schedule') }}
+        if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') || (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
         uses: actions-js/push@v1.3
         with:
           github_token: ${{ secrets.GH_BOT_TOKEN }}
