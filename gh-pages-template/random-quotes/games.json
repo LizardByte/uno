@@ -1,0 +1,236 @@
+[
+  {
+    "quote": "@!#?@!",
+    "quote_safe": false,
+    "game": false,
+    "character": false
+  },
+  {
+    "quote": "Ah shit, here we go again",
+    "quote_safe": "Ah ****, here we go again",
+    "game": "Grand Theft Auto: San Andreas",
+    "character": "Carl Johnson"
+  },
+  {
+    "quote": "All Your Base Are Belong To Us",
+    "quote_safe": false,
+    "game": "Zero Wing",
+    "character": "Cats"
+  },
+  {
+    "quote": "Beyond the scope of Light, beyond the reach of Dark. What could possibly await us. And yet we seek it, insatiably.",
+    "quote_safe": false,
+    "game": "Dark Souls II",
+    "character": "Aldia, Scholar of the First Sin"
+  },
+  {
+    "quote": "Bury me with my money!",
+    "quote_safe": false,
+    "game": "Sunset Riders",
+    "character": "Simon Greedwell"
+  },
+  {
+    "quote": "Did I ever tell you what the definition of insanity is?",
+    "quote_safe": false,
+    "game": "Far Cry 3",
+    "character": "Vaas"
+  },
+  {
+    "quote": "Do a barrel roll!",
+    "quote_safe": false,
+    "game": "Star Fox 64",
+    "character": "Peppy Hare"
+  },
+  {
+    "quote": "Don't make a girl a promise... If you know you can't keep it.",
+    "quote_safe": false,
+    "game": "Halo 3",
+    "character": "Cortana"
+  },
+  {
+    "quote": "Finish Him!",
+    "quote_safe": false,
+    "game": "Mortal Kombat",
+    "character": "announcer"
+  },
+  {
+    "quote": "Get over here!",
+    "quote_safe": false,
+    "game": "Mortal Kombat",
+    "character": "Scorpion"
+  },
+  {
+    "quote": "Hell, it's about time",
+    "quote_safe": false,
+    "game": "StarCraft",
+    "character": "Tychus Findlay"
+  },
+  {
+    "quote": "Hello, my friend. Stay awhile and listen.",
+    "quote_safe": false,
+    "game": "Diablo II",
+    "character": "Deckard Cain"
+  },
+  {
+    "quote": "Hey! Listen!",
+    "quote_safe": false,
+    "game": "Ocarina of Time",
+    "character": "Navi"
+  },
+  {
+    "quote": "I gotta believe!",
+    "quote_safe": false,
+    "game": "PaRappa The Rappa",
+    "character": "Parappa the Rappa"
+  },
+  {
+    "quote": "I used to be an adventurer like you. Then I took an arrow in the knee.",
+    "quote_safe": false,
+    "game": "The Elder Scrolls V: Skyrim",
+    "character": "NPC"
+  },
+  {
+    "quote": "I want to restore this world, but I fear I can't do it alone. Perhaps you could give me a hand?",
+    "quote_safe": false,
+    "game": ".hack",
+    "character": "Balmung"
+  },
+  {
+    "quote": "It is pitch black. You are likely to be eaten by a grue.",
+    "quote_safe": false,
+    "game": "Zork",
+    "character": false
+  },
+  {
+    "quote": "It’s dangerous to go alone, take this!",
+    "quote_safe": false,
+    "game": "The Legend of Zelda",
+    "character": "old man"
+  },
+  {
+    "quote": "It’s easy to forget what a sin is in the middle of a battlefield.",
+    "quote_safe": false,
+    "game": "Metal Gear Solid",
+    "character": "Solid Snake"
+  },
+  {
+    "quote": "It's time to kick ass and chew bubblegum... and I'm all outta gum.",
+    "quote_safe": "It's time to kick *** and chew bubblegum... and I'm all outta gum.",
+    "game": "Duke Nuken 3D",
+    "character": "Duke Nukem"
+  },
+  {
+    "quote": "No Gods or Kings, only Man",
+    "quote_safe": false,
+    "game": "Bioshock",
+    "character": false
+  },
+  {
+    "quote": "Nothing is true, everything is permitted.",
+    "quote_safe": false,
+    "game": "Assassin's Creed",
+    "character": false
+  },
+  {
+    "quote": "Reticulating splines",
+    "quote_safe": false,
+    "game": "Sims",
+    "character": false
+  },
+  {
+    "quote": "Sir. Finishing this fight.",
+    "quote_safe": false,
+    "game": "Halo 2",
+    "character": "Master Chief"
+  },
+  {
+    "quote": "Stand by for Titanfall",
+    "quote_safe": false,
+    "game": "Titanfall",
+    "character": false
+  },
+  {
+    "quote": "The Cake Is a Lie",
+    "quote_safe": false,
+    "game": "Portal",
+    "character": false
+  },
+  {
+    "quote": "Thank you Mario! But our Princess is in another castle!",
+    "quote_safe": false,
+    "game": "Super Mario Bros.",
+    "character": "Toad"
+  },
+  {
+    "quote": "Thought I'd Try Shooting My Way Out—Mix Things Up A Little.",
+    "quote_safe": false,
+    "game": "Halo 3",
+    "character": "Master Chief"
+  },
+  {
+    "quote": "Wake me... when you need me.",
+    "quote_safe": false,
+    "game": "Halo 3",
+    "character": "Master Chief"
+  },
+  {
+    "quote": "War Never Changes",
+    "quote_safe": false,
+    "game": "Fallout",
+    "character": false
+  },
+  {
+    "quote": "We all make choices, but in the end our choices make us.",
+    "quote_safe": false,
+    "game": "BioShock",
+    "character": "Andrew Ryan"
+  },
+  {
+    "quote": "We should start from the first floor, okay? And, Jill, here's a lock pick. It might be handy if you, the master of unlocking, take it with you.",
+    "quote_safe": false,
+    "game": "Resident Evil",
+    "character": "Barry Burton"
+  },
+  {
+    "quote": "Well, butter my biscuits!",
+    "quote_safe": false,
+    "game": "Starcraft II",
+    "character": false
+  },
+  {
+    "quote": "Wololo",
+    "quote_safe": false,
+    "game": "Age of Empires",
+    "character": "Priest"
+  },
+  {
+    "quote": "Would you kindly?",
+    "quote_safe": false,
+    "game": "BioShock",
+    "character": "Atlas/Frank Fontaine"
+  },
+  {
+    "quote": "Yes sir, I need a weapon.",
+    "quote_safe": false,
+    "game": "Halo 2",
+    "character": "Master Chief"
+  },
+  {
+    "quote": "You've got a heart of gold. Don't let them take it from you.",
+    "quote_safe": false,
+    "game": "Demon's Souls",
+    "character": false
+  },
+  {
+    "quote": "You have died of dysentery.",
+    "quote_safe": false,
+    "game": "The Oregon Trail",
+    "character": false
+  },
+  {
+    "quote": "You must construct additional pylons.",
+    "quote_safe": false,
+    "game": "Starcraft",
+    "character": "Protoss VO"
+  }
+]
