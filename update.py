@@ -34,7 +34,7 @@ def save_image_from_url(file_path: str, image_url: str):
         handler.write(img_data)
 
 
-def write_json_files(file_path: str, data: dict):
+def write_json_files(file_path: str, data: any):
     """
     Write dictionary to json file.
 
@@ -105,28 +105,91 @@ def update_github():
 
         response = requests.post(url=url, json={'query': query}, headers=headers)
         repo_data = response.json()
-        image_url = repo_data['data']['repository']['openGraphImageUrl']
+        try:
+            image_url = repo_data['data']['repository']['openGraphImageUrl']
+        except KeyError:
+            raise SystemExit('"GH_AUTH_TOKEN" is invalid.')
         if 'avatars' not in image_url:
             file_path = os.path.join('github', 'openGraphImages', f"{repo['name']}.png")
             save_image_from_url(file_path=file_path, image_url=image_url)
+
+
+def readthedocs_loop(url: str, file_path: str) -> list:
+    headers = {'Authorization': f'token {args.readthedocs_token}'}
+
+    results = []
+
+    while True:
+        response = requests.get(url=url, headers=headers)
+        try:
+            data = response.json()
+        except requests.exceptions.JSONDecodeError:
+            break
+
+        try:
+            results.extend(data['results'])
+        except KeyError:
+            pass
+
+        try:
+            url = data['next']
+        except KeyError:
+            url = None
+
+        if not url:
+            break
+
+    if results:
+        write_json_files(file_path=file_path, data=results)
+
+    return results
+
+
+def update_readthedocs():
+    """
+    Cache and update readthedocs info.
+    """
+    url_base = 'https://readthedocs.org'
+    url = f'{url_base}/api/v3/projects/'
+
+    file_path = os.path.join('readthedocs', 'projects')
+    projects = readthedocs_loop(url=url, file_path=file_path)
+
+    for project in projects:
+        git_url = project['repository']['url']
+        repo_name = git_url.rsplit('/', 1)[-1].rsplit('.git', 1)[0]
+
+        for link in project['_links']:
+            file_path = os.path.join('readthedocs', link, repo_name)
+
+            url = project['_links'][link]
+            readthedocs_loop(url=url, file_path=file_path)
+
+
+def missing_arg():
+    parser.print_help()
+    raise SystemExit()
 
 
 if __name__ == '__main__':
     # setup arguments using argparse
     parser = argparse.ArgumentParser(description="Update github pages.")
     parser.add_argument('--github_repository_owner', type=str, required=False,
-                        default=os.getenv('GITHUB_REPOSITORY_OWNER'), help='GitHub Username')
+                        default=os.getenv('GITHUB_REPOSITORY_OWNER'),
+                        help='GitHub Username. Can use environment variable "GITHUB_REPOSITORY_OWNER"')
     parser.add_argument('--github_auth_token', type=str, required=False, default=os.getenv('GH_AUTH_TOKEN'),
-                        help='GitHub Token, no scope selection is necessary.')
+                        help='GitHub Token, no scope selection is necessary. Can use environment variable '
+                             '"GH_AUTH_TOKEN"')
+    parser.add_argument('--readthedocs_token', type=str, required=False, default=os.getenv('READTHEDOCS_TOKEN'),
+                        help='Readthedocs API token. Can use environment variable "READTHEDOCS_TOKEN"')
     parser.add_argument('-i', '--indent_json', action='store_true', help='Indent json files.')
 
     args = parser.parse_args()
     args.indent = 4 if args.indent_json else None
 
-    if not args.github_repository_owner or not args.github_auth_token:
-        raise SystemExit('Secrets not supplied. Required environment variables are "GITHUB_REPOSITORY_OWNER", and '
-                         '"GH_AUTH_TOKEN". They should be placed in org/repo secrets and passed in as arguments if '
-                         'using github, or ".env" file if running local.')
+    if not args.github_repository_owner or not args.github_auth_token or not args.readthedocs_token:
+        missing_arg()
 
     update_aur()
     update_github()
+    update_readthedocs()
