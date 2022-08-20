@@ -80,7 +80,6 @@ def update_github():
     """
     Cache and update GitHub Repo banners.
     """
-    # todo remove token
     response = s.get(url=f'https://api.github.com/users/{args.github_repository_owner}/repos')
     repos = response.json()
 
@@ -94,10 +93,11 @@ def update_github():
 
     for repo in repos:
         # languages
-        try:
-            response = s.get(url=repo['languages_url'])
-        except TypeError as e:
-            print(e)
+        response = s.get(url=repo['languages_url'], headers=headers)
+        # if TypeError, API limit has likely been exceeded or possible issue with GitHub API...
+        # https://www.githubstatus.com/
+        # do not error handle, better that workflow fails
+
         languages = response.json()
 
         file_path = os.path.join('github', 'languages', repo['name'])
