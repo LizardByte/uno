@@ -5,11 +5,17 @@ import os
 import pathlib
 
 # lib imports
-import requests
 from dotenv import load_dotenv
+import requests
+from requests.adapters import HTTPAdapter
 
 # setup environment if running locally
 load_dotenv()
+
+# setup requests session
+s = requests.Session()
+retry_adapter = HTTPAdapter(max_retries=5)
+s.mount('https://', retry_adapter)
 
 
 def save_image_from_url(file_path: str, image_url: str):
@@ -28,7 +34,7 @@ def save_image_from_url(file_path: str, image_url: str):
 
     pathlib.Path(directory).mkdir(parents=True, exist_ok=True)
 
-    img_data = requests.get(image_url).content
+    img_data = s.get(url=image_url).content
 
     with open(file_path, 'wb') as handler:
         handler.write(img_data)
@@ -59,11 +65,11 @@ def update_aur():
     Cache and update data from aur API.
     """
     aur_base_url = 'https://aur.archlinux.org/rpc?v=5&type=info&arg='
-    aur_repos = ['sunshine-git', 'sunshine']
+    aur_repos = ['sunshine']
 
     for repo in aur_repos:
         url = f'{aur_base_url}{repo}'
-        response = requests.get(url=url)
+        response = s.get(url=url)
         data = response.json()
 
         file_path = os.path.join('aur', repo)
@@ -75,7 +81,7 @@ def update_github():
     Cache and update GitHub Repo banners.
     """
     # todo remove token
-    response = requests.get(f'https://api.github.com/users/{args.github_repository_owner}/repos')
+    response = s.get(url=f'https://api.github.com/users/{args.github_repository_owner}/repos')
     repos = response.json()
 
     file_path = os.path.join('github', 'repos')
@@ -88,7 +94,10 @@ def update_github():
 
     for repo in repos:
         # languages
-        response = requests.get(repo['languages_url'])
+        try:
+            response = s.get(url=repo['languages_url'])
+        except TypeError as e:
+            print(e)
         languages = response.json()
 
         file_path = os.path.join('github', 'languages', repo['name'])
@@ -103,7 +112,7 @@ def update_github():
         }
         """ % (repo['owner']['login'], repo['name'])
 
-        response = requests.post(url=url, json={'query': query}, headers=headers)
+        response = s.post(url=url, json={'query': query}, headers=headers)
         repo_data = response.json()
         try:
             image_url = repo_data['data']['repository']['openGraphImageUrl']
@@ -120,7 +129,7 @@ def readthedocs_loop(url: str, file_path: str) -> list:
     results = []
 
     while True:
-        response = requests.get(url=url, headers=headers)
+        response = s.get(url=url, headers=headers)
         try:
             data = response.json()
         except requests.exceptions.JSONDecodeError:
