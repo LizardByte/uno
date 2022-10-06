@@ -53,6 +53,9 @@ jobs:
         working-directory: gh-pages
         run: |
           python ../update.py \
+          --facebook_group_id ${{ secrets.FACEBOOK_GROUP_ID }} \
+          --facebook_page_id ${{ secrets.FACEBOOK_PAGE_ID }} \
+          --facebook_token ${{ secrets.FACEBOOK_ACCESS_TOKEN }} \
           --github_repository_owner ${{ secrets.GH_ORG_NAME }} \
           --github_auth_token ${{ secrets.GH_BOT_TOKEN }} \
           --readthedocs_token ${{ secrets.READTHEDOCS_TOKEN }}

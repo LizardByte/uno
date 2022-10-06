@@ -76,6 +76,27 @@ def update_aur():
         write_json_files(file_path=file_path, data=data)
 
 
+def update_fb():
+    """
+    Get number of Facebook page likes and group members.
+    """
+    fb_base_url = 'https://graph.facebook.com/'
+
+    fb_endpoints = dict(
+        group=f'{args.facebook_group_id}?fields=member_count,name,description&access_token={args.facebook_token}',
+        page=f'{args.facebook_page_id}/insights?metric=page_fans&access_token={args.facebook_token}'
+    )
+
+    for key, value in fb_endpoints.items():
+        url = f'{fb_base_url}/{value}'
+        response = requests.get(url=url)
+
+        data = response.json()
+
+        file_path = os.path.join('facebook', key)
+        write_json_files(file_path=file_path, data=data)
+
+
 def update_github():
     """
     Cache and update GitHub Repo banners.
@@ -183,6 +204,14 @@ def missing_arg():
 if __name__ == '__main__':
     # setup arguments using argparse
     parser = argparse.ArgumentParser(description="Update github pages.")
+    parser.add_argument('--facebook_group_id', type=str, required=False, default=os.getenv('FACEBOOK_GROUP_ID'),
+                        help='Facebook group ID.')
+    parser.add_argument('--facebook_page_id', type=str, required=False, default=os.getenv('FACEBOOK_PAGE_ID'),
+                        help='Facebook page ID.')
+    parser.add_argument('--facebook_token', type=str, required=False, default=os.getenv('FACEBOOK_TOKEN'),
+                        help='Facebook Token, requires `groups_access_member_info`, `read_insights`, and '
+                             '`pages_read_engagement`. Must be a `page` token, not a `user` token. Token owner must be'
+                             'admin of the group.')
     parser.add_argument('--github_repository_owner', type=str, required=False,
                         default=os.getenv('GITHUB_REPOSITORY_OWNER'),
                         help='GitHub Username. Can use environment variable "GITHUB_REPOSITORY_OWNER"')
@@ -196,9 +225,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
     args.indent = 4 if args.indent_json else None
 
-    if not args.github_repository_owner or not args.github_auth_token or not args.readthedocs_token:
+    if not args.facebook_group_id or not args.facebook_page_id or not args.facebook_token \
+            or not args.github_repository_owner or not args.github_auth_token or not args.readthedocs_token:
         missing_arg()
 
     update_aur()
+    update_fb()
     update_github()
     update_readthedocs()
