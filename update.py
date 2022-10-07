@@ -249,4 +249,5 @@ if __name__ == '__main__':
     update_aur()
     update_fb()
     update_github()
+    update_patreon()
     update_readthedocs()
