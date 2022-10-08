@@ -93,6 +93,13 @@ def update_fb():
         response = requests.get(url=url)
 
         data = response.json()
+        try:
+            data['paging']
+        except KeyError:
+            pass
+        else:
+            # remove facebook token from data
+            del data['paging']
 
         file_path = os.path.join('facebook', key)
         write_json_files(file_path=file_path, data=data)
