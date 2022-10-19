@@ -7,6 +7,7 @@ import re
 
 # lib imports
 from dotenv import load_dotenv
+from PIL import Image
 import requests
 from requests.adapters import HTTPAdapter
 
@@ -19,26 +20,39 @@ retry_adapter = HTTPAdapter(max_retries=5)
 s.mount('https://', retry_adapter)
 
 
-def save_image_from_url(file_path: str, image_url: str):
+def save_image_from_url(file_path: str, file_extension: str, image_url: str, size_x: int = 0, size_y: int = 0):
     """
-    Write image data to file.
+    Write image data to file. If ``size_x`` and ``size_y`` are both supplied, a resized image will also be saved.
 
     Parameters
     ----------
     file_path : str
-        The file path to save the file at. Must include the file extension.
+        The file path to save the file at.
+    file_extension : str
+        The extension of the file name.
     image_url : str
         The image url.
+    size_x : int
+        The ``x`` dimension to resize the image to. If used, ``size_y`` must also be defined.
+    size_y : int
+        The ``y`` dimension to resize the image to. If used, ``size_x`` must also be defined.
     """
     # determine the directory
     directory = os.path.dirname(file_path)
 
     pathlib.Path(directory).mkdir(parents=True, exist_ok=True)
 
-    img_data = s.get(url=image_url).content
+    og_img_data = s.get(url=image_url).content
 
-    with open(file_path, 'wb') as handler:
-        handler.write(img_data)
+    file_name_with_ext = f'{file_path}.{file_extension}'
+    with open(file_name_with_ext, 'wb') as handler:
+        handler.write(og_img_data)
+
+    # resize the image
+    if size_x and size_y:
+        pil_img_data = Image.open(file_name_with_ext)
+        resized_img_data = pil_img_data.resize((size_x, size_y))
+        resized_img_data.save(fp=f'{file_path}_{size_x}x{size_y}.{file_extension}')
 
 
 def write_json_files(file_path: str, data: any):
@@ -148,8 +162,8 @@ def update_github():
         except KeyError:
             raise SystemExit('"GH_AUTH_TOKEN" is invalid.')
         if 'avatars' not in image_url:
-            file_path = os.path.join('github', 'openGraphImages', f"{repo['name']}.png")
-            save_image_from_url(file_path=file_path, image_url=image_url)
+            file_path = os.path.join('github', 'openGraphImages', repo['name'])
+            save_image_from_url(file_path=file_path, file_extension='png', image_url=image_url, size_x=624, size_y=312)
 
 
 def update_patreon():
