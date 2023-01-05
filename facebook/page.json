@@ -1,1 +1,1 @@
-{"error": {"message": "(#190) This method must be called with a Page Access Token", "type": "OAuthException", "code": 190, "fbtrace_id": "Arf4VerNwjGhfb4B6XbdtRw"}}
+{"data": [{"name": "page_fans", "period": "day", "values": [{"value": 37, "end_time": "2023-01-02T08:00:00+0000"}, {"value": 38, "end_time": "2023-01-03T08:00:00+0000"}], "title": "Lifetime Total Likes", "description": "Lifetime: The total number of people who have liked your Page. (Unique Users)", "id": "106260218330071/insights/page_fans/day"}]}
