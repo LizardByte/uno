@@ -6,6 +6,7 @@ import pathlib
 import re
 
 # lib imports
+import cloudscraper
 from dotenv import load_dotenv
 from PIL import Image
 import requests
@@ -15,7 +16,7 @@ from requests.adapters import HTTPAdapter
 load_dotenv()
 
 # setup requests session
-s = requests.Session()
+s = cloudscraper.CloudScraper()  # CloudScraper inherits from requests.Session
 retry_adapter = HTTPAdapter(max_retries=5)
 s.mount('https://', retry_adapter)
 
@@ -172,7 +173,7 @@ def update_patreon():
     """
     patreon_url = 'https://www.patreon.com/LizardByte'
 
-    response = requests.get(url=patreon_url)
+    response = s.get(url=patreon_url)
 
     data = dict(
         patron_count=int(re.search(r'\"patron_count\":\s(\d+)', response.text).group(1))
