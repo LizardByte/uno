@@ -92,6 +92,19 @@ def update_aur():
         write_json_files(file_path=file_path, data=data)
 
 
+def update_discord():
+    """
+    Cache and update data from Discord API.
+    """
+    discord_url = f'https://discordapp.com/api/invites/{args.discord_invite}?with_counts=true'
+
+    response = s.get(url=discord_url)
+    data = response.json()
+
+    file_path = os.path.join('discord', 'invite')
+    write_json_files(file_path=file_path, data=data)
+
+
 def update_fb():
     """
     Get number of Facebook page likes and group members.
@@ -243,6 +256,8 @@ def missing_arg():
 if __name__ == '__main__':
     # setup arguments using argparse
     parser = argparse.ArgumentParser(description="Update github pages.")
+    parser.add_argument('--discord_invite', type=str, required=False, default=os.getenv('DISCORD_INVITE'),
+                        help='Discord invite code.')
     parser.add_argument('--facebook_group_id', type=str, required=False, default=os.getenv('FACEBOOK_GROUP_ID'),
                         help='Facebook group ID.')
     parser.add_argument('--facebook_page_id', type=str, required=False, default=os.getenv('FACEBOOK_PAGE_ID'),
@@ -264,11 +279,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
     args.indent = 4 if args.indent_json else None
 
-    if not args.facebook_group_id or not args.facebook_page_id or not args.facebook_token \
+    if not args.discord_invite or not args.facebook_group_id or not args.facebook_page_id or not args.facebook_token \
             or not args.github_repository_owner or not args.github_auth_token or not args.readthedocs_token:
         missing_arg()
 
     update_aur()
+    update_discord()
     update_fb()
     update_github()
     update_patreon()
