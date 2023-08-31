@@ -38,6 +38,7 @@ def save_image_from_url(file_path: str, file_extension: str, image_url: str, siz
     size_y : int
         The ``y`` dimension to resize the image to. If used, ``size_x`` must also be defined.
     """
+    print(f'Saving image from {image_url}')
     # determine the directory
     directory = os.path.dirname(file_path)
 
@@ -67,6 +68,7 @@ def write_json_files(file_path: str, data: any):
     data
         The dictionary data to write in the json file.
     """
+    print(f'Writing json file at {file_path}')
     # determine the directory
     directory = os.path.dirname(file_path)
 
@@ -80,6 +82,7 @@ def update_aur():
     """
     Cache and update data from aur API.
     """
+    print('Updating AUR data...')
     aur_base_url = 'https://aur.archlinux.org/rpc?v=5&type=info&arg='
     aur_repos = ['sunshine']
 
@@ -96,6 +99,7 @@ def update_discord():
     """
     Cache and update data from Discord API.
     """
+    print('Updating Discord data...')
     discord_url = f'https://discordapp.com/api/invites/{args.discord_invite}?with_counts=true'
 
     response = s.get(url=discord_url)
@@ -109,6 +113,7 @@ def update_fb():
     """
     Get number of Facebook page likes and group members.
     """
+    print('Updating Facebook data...')
     fb_base_url = 'https://graph.facebook.com/'
 
     fb_endpoints = dict(
@@ -117,6 +122,7 @@ def update_fb():
     )
 
     for key, value in fb_endpoints.items():
+        print(f'Updating Facebook {key} data...')
         url = f'{fb_base_url}/{value}'
         response = requests.get(url=url)
 
@@ -137,6 +143,7 @@ def update_github():
     """
     Cache and update GitHub Repo banners.
     """
+    print('Updating GitHub data...')
     response = s.get(url=f'https://api.github.com/users/{args.github_repository_owner}/repos')
     repos = response.json()
 
@@ -149,6 +156,7 @@ def update_github():
     url = 'https://api.github.com/graphql'
 
     for repo in repos:
+        print(f'Updating GitHub {repo["name"]} data...')
         # languages
         response = s.get(url=repo['languages_url'], headers=headers)
         # if TypeError, API limit has likely been exceeded or possible issue with GitHub API...
@@ -184,6 +192,7 @@ def update_patreon():
     """
     Get patron count from Patreon.
     """
+    print('Updating Patreon data...')
     patreon_url = 'https://www.patreon.com/LizardByte'
 
     response = s.get(url=patreon_url)
@@ -197,7 +206,10 @@ def update_patreon():
 
 
 def readthedocs_loop(url: str, file_path: str) -> list:
-    headers = {'Authorization': f'token {args.readthedocs_token}'}
+    headers = {
+        'Authorization': f'token {args.readthedocs_token}',
+        'Accept': 'application/json'
+    }
 
     results = []
 
@@ -231,6 +243,7 @@ def update_readthedocs():
     """
     Cache and update readthedocs info.
     """
+    print('Updating Readthedocs data...')
     url_base = 'https://readthedocs.org'
     url = f'{url_base}/api/v3/projects/'
 
@@ -238,6 +251,7 @@ def update_readthedocs():
     projects = readthedocs_loop(url=url, file_path=file_path)
 
     for project in projects:
+        print(f'Updating Readthedocs data for project: {project["slug"]}')
         git_url = project['repository']['url']
         repo_name = git_url.rsplit('/', 1)[-1].rsplit('.git', 1)[0]
 
