@@ -3,7 +3,6 @@ import argparse
 import json
 import os
 import pathlib
-import re
 
 # lib imports
 import cloudscraper
@@ -193,13 +192,11 @@ def update_patreon():
     Get patron count from Patreon.
     """
     print('Updating Patreon data...')
-    patreon_url = 'https://www.patreon.com/LizardByte'
+    patreon_url = 'https://www.patreon.com/api/campaigns/6131567'
 
     response = s.get(url=patreon_url)
 
-    data = dict(
-        patron_count=int(re.search(r'\"patron_count\":\s(\d+)', response.text).group(1))
-    )
+    data = response.json()['data']['attributes']
 
     file_path = os.path.join('patreon', 'LizardByte')
     write_json_files(file_path=file_path, data=data)
