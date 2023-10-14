@@ -54,9 +54,8 @@ jobs:
           cp -f -r ./gh-pages-template/. ./gh-pages/
 
       - name: Update
-        working-directory: gh-pages
         run: |
-          python -u ../update.py \
+          python -u ./update.py \
           --discord_invite ${{ secrets.DISCORD_INVITE }} \
           --facebook_group_id ${{ secrets.FACEBOOK_GROUP_ID }} \
           --facebook_page_id ${{ secrets.FACEBOOK_PAGE_ID }} \

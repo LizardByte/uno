@@ -19,6 +19,9 @@ s = cloudscraper.CloudScraper()  # CloudScraper inherits from requests.Session
 retry_adapter = HTTPAdapter(max_retries=5)
 s.mount('https://', retry_adapter)
 
+# constants
+BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gh-pages')
+
 
 def save_image_from_url(file_path: str, file_extension: str, image_url: str, size_x: int = 0, size_y: int = 0):
     """
@@ -90,7 +93,34 @@ def update_aur():
         response = s.get(url=url)
         data = response.json()
 
-        file_path = os.path.join('aur', repo)
+        file_path = os.path.join(BASE_DIR, 'aur', repo)
+        write_json_files(file_path=file_path, data=data)
+
+
+def update_codecov():
+    """
+    Get code coverage data from Codecov API.
+    """
+    print('Updating Codecov data...')
+    headers = dict(
+        Accept='application/json',
+        Authorization=f'bearer {args.codecov_token}',
+    )
+    base_url = f'https://codecov.io/api/v2/gh/{args.github_repository_owner}'
+
+    url = f'{base_url}/repos?page_size=500'
+
+    response = s.get(url=url, headers=headers)
+    data = response.json()
+    assert data['next'] is None, 'More than 500 repos found, need to implement pagination.'
+
+    for repo in data['results']:
+        print(f'Updating Codecov data for repo: {repo["name"]}')
+        url = f'{base_url}/repos/{repo["name"]}'
+        response = s.get(url=url, headers=headers)
+        data = response.json()
+
+        file_path = os.path.join(BASE_DIR, 'codecov', repo['name'])
         write_json_files(file_path=file_path, data=data)
 
 
@@ -104,7 +134,7 @@ def update_discord():
     response = s.get(url=discord_url)
     data = response.json()
 
-    file_path = os.path.join('discord', 'invite')
+    file_path = os.path.join(BASE_DIR, 'discord', 'invite')
     write_json_files(file_path=file_path, data=data)
 
 
@@ -134,7 +164,7 @@ def update_fb():
             # remove facebook token from data
             del data['paging']
 
-        file_path = os.path.join('facebook', key)
+        file_path = os.path.join(BASE_DIR, 'facebook', key)
         write_json_files(file_path=file_path, data=data)
 
 
@@ -146,7 +176,7 @@ def update_github():
     response = s.get(url=f'https://api.github.com/users/{args.github_repository_owner}/repos')
     repos = response.json()
 
-    file_path = os.path.join('github', 'repos')
+    file_path = os.path.join(BASE_DIR, 'github', 'repos')
     write_json_files(file_path=file_path, data=repos)
 
     headers = dict(
@@ -164,7 +194,7 @@ def update_github():
 
         languages = response.json()
 
-        file_path = os.path.join('github', 'languages', repo['name'])
+        file_path = os.path.join(BASE_DIR, 'github', 'languages', repo['name'])
         write_json_files(file_path=file_path, data=languages)
 
         # openGraphImages
@@ -183,7 +213,7 @@ def update_github():
         except KeyError:
             raise SystemExit('"GH_AUTH_TOKEN" is invalid.')
         if 'avatars' not in image_url:
-            file_path = os.path.join('github', 'openGraphImages', repo['name'])
+            file_path = os.path.join(BASE_DIR, 'github', 'openGraphImages', repo['name'])
             save_image_from_url(file_path=file_path, file_extension='png', image_url=image_url, size_x=624, size_y=312)
 
 
@@ -198,7 +228,7 @@ def update_patreon():
 
     data = response.json()['data']['attributes']
 
-    file_path = os.path.join('patreon', 'LizardByte')
+    file_path = os.path.join(BASE_DIR, 'patreon', 'LizardByte')
     write_json_files(file_path=file_path, data=data)
 
 
@@ -244,7 +274,7 @@ def update_readthedocs():
     url_base = 'https://readthedocs.org'
     url = f'{url_base}/api/v3/projects/'
 
-    file_path = os.path.join('readthedocs', 'projects')
+    file_path = os.path.join(BASE_DIR, 'readthedocs', 'projects')
     projects = readthedocs_loop(url=url, file_path=file_path)
 
     for project in projects:
@@ -253,7 +283,7 @@ def update_readthedocs():
         repo_name = git_url.rsplit('/', 1)[-1].rsplit('.git', 1)[0]
 
         for link in project['_links']:
-            file_path = os.path.join('readthedocs', link, repo_name)
+            file_path = os.path.join(BASE_DIR, 'readthedocs', link, repo_name)
 
             url = project['_links'][link]
             readthedocs_loop(url=url, file_path=file_path)
@@ -267,6 +297,8 @@ def missing_arg():
 if __name__ == '__main__':
     # setup arguments using argparse
     parser = argparse.ArgumentParser(description="Update github pages.")
+    parser.add_argument('--codecov_token', type=str, required=False, default=os.getenv('CODECOV_TOKEN'),
+                        help='Codecov API token.')
     parser.add_argument('--discord_invite', type=str, required=False, default=os.getenv('DISCORD_INVITE'),
                         help='Discord invite code.')
     parser.add_argument('--facebook_group_id', type=str, required=False, default=os.getenv('FACEBOOK_GROUP_ID'),
@@ -275,7 +307,7 @@ if __name__ == '__main__':
                         help='Facebook page ID.')
     parser.add_argument('--facebook_token', type=str, required=False, default=os.getenv('FACEBOOK_TOKEN'),
                         help='Facebook Token, requires `groups_access_member_info`, `read_insights`, and '
-                             '`pages_read_engagement`. Must be a `page` token, not a `user` token. Token owner must be'
+                             '`pages_read_engagement`. Must be a `page` token, not a `user` token. Token owner must be '
                              'admin of the group.')
     parser.add_argument('--github_repository_owner', type=str, required=False,
                         default=os.getenv('GITHUB_REPOSITORY_OWNER'),
@@ -290,11 +322,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
     args.indent = 4 if args.indent_json else None
 
-    if not args.discord_invite or not args.facebook_group_id or not args.facebook_page_id or not args.facebook_token \
-            or not args.github_repository_owner or not args.github_auth_token or not args.readthedocs_token:
+    if not args.codecov_token or not args.discord_invite or not args.facebook_group_id or not args.facebook_page_id or \
+            not args.facebook_token or not args.github_repository_owner or not args.github_auth_token or \
+            not args.readthedocs_token:
         missing_arg()
 
     update_aur()
+    update_codecov()
     update_discord()
     update_fb()
     update_github()
