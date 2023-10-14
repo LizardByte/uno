@@ -291,7 +291,7 @@ def update_readthedocs():
 
 def missing_arg():
     parser.print_help()
-    raise SystemExit()
+    raise SystemExit(1)
 
 
 if __name__ == '__main__':
