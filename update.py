@@ -6,10 +6,12 @@ import pathlib
 
 # lib imports
 import cloudscraper
+from crowdin_api import CrowdinClient
 from dotenv import load_dotenv
 from PIL import Image
 import requests
 from requests.adapters import HTTPAdapter
+import svgwrite
 
 # setup environment if running locally
 load_dotenv()
@@ -122,6 +124,108 @@ def update_codecov():
 
         file_path = os.path.join(BASE_DIR, 'codecov', repo['name'])
         write_json_files(file_path=file_path, data=data)
+
+
+def update_crowdin():
+    """
+    Cache and update data from Crowdin API, and generate completion graph.
+    """
+    print('Updating Crowdin data...')
+    client = CrowdinClient(token=args.crowdin_token)
+
+    # automatically collect crowdin projects
+    project_data = client.projects.list_projects()['data']
+
+    for project in project_data:
+        project_name = project['data']['name']
+        project_id = project['data']['id']
+        data = client.translation_status.get_project_progress(projectId=project_id)['data']
+        file_path = os.path.join(BASE_DIR, 'crowdin', project_name.replace(' ', '_'))
+        write_json_files(file_path=file_path, data=data)
+
+        # sort data by approval progress first, then translation progress, then alphabetically
+        data.sort(key=lambda x: (
+            -x['data']['approvalProgress'],
+            -x['data']['translationProgress'],
+            x['data']['language']['name']
+        ), reverse=False)
+
+        # ensure "en" is first, if it exists
+        try:
+            en_index = [x['data']['language']['id'] for x in data].index('en')
+        except ValueError:
+            pass
+        else:
+            data.insert(0, data.pop(en_index))
+
+        # generate translation and approval completion graph
+        print(f'Generating Crowdin graph for project: {project_name}')
+        line_height = 32
+        bar_height = 16
+        svg_width = 500
+        label_width = 200
+        progress_width = 160
+        insert = 12
+        bar_corner_radius = 0
+
+        dwg = svgwrite.Drawing(filename=f'{file_path}_graph.svg', size=(svg_width, len(data) * line_height))
+
+        # load css font
+        dwg.embed_stylesheet("""
+        @import url(https://fonts.googleapis.com/css?family=Open+Sans);
+        .svg-font {
+            font-family: "Open Sans";
+            font-size: 12px;
+            fill: #999;
+        }
+        """)
+        for lang_base in data:
+            language = lang_base['data']
+            g = dwg.add(dwg.g(
+                class_="svg-font",
+                transform='translate(0,{})'.format(data.index(lang_base) * line_height)
+            ))
+            g.add(dwg.text(
+                f"{language['language']['name']} ({language['language']['id']})",
+                insert=(label_width, 18),
+                style='text-anchor:end;')
+            )
+
+            translation_progress = language['translationProgress'] / 100.0
+            approval_progress = language['approvalProgress'] / 100.0
+
+            progress_insert = (label_width + insert, 6)
+            if translation_progress < 100:
+                g.add(dwg.rect(
+                    insert=progress_insert,
+                    size=(progress_width, bar_height),
+                    rx=bar_corner_radius,
+                    ry=bar_corner_radius,
+                    fill='#999',
+                    style='filter:opacity(30%);')
+                )
+            if translation_progress > 0 and approval_progress < 100:
+                g.add(dwg.rect(
+                    insert=progress_insert,
+                    size=(progress_width * translation_progress, bar_height),
+                    rx=bar_corner_radius,
+                    ry=bar_corner_radius,
+                    fill='#5D89C3')
+                )
+            if approval_progress > 0:
+                g.add(dwg.rect(
+                    insert=progress_insert,
+                    size=(progress_width * approval_progress, bar_height),
+                    rx=bar_corner_radius,
+                    ry=bar_corner_radius,
+                    fill='#71C277')
+                )
+
+            g.add(dwg.text('{}%'.format(language['translationProgress']),
+                           insert=(progress_insert[0] + progress_width + insert, bar_height)))
+
+            # write the svg file
+            dwg.save(pretty=True)
 
 
 def update_discord():
@@ -299,6 +403,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Update github pages.")
     parser.add_argument('--codecov_token', type=str, required=False, default=os.getenv('CODECOV_TOKEN'),
                         help='Codecov API token.')
+    parser.add_argument('--crowdin_token', type=str, required=False, default=os.getenv('CROWDIN_TOKEN'),
+                        help='Crowdin API token.')
     parser.add_argument('--discord_invite', type=str, required=False, default=os.getenv('DISCORD_INVITE'),
                         help='Discord invite code.')
     parser.add_argument('--facebook_group_id', type=str, required=False, default=os.getenv('FACEBOOK_GROUP_ID'),
@@ -329,6 +435,7 @@ if __name__ == '__main__':
 
     update_aur()
     update_codecov()
+    update_crowdin()
     update_discord()
     update_fb()
     update_github()
