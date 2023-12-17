@@ -433,6 +433,32 @@ def update_readthedocs():
             readthedocs_loop(url=url, file_path=file_path)
 
 
+def update_reddit():
+    """
+    Cache and update data from Reddit.
+    """
+    subreddits = [
+        'lizardbyte'
+    ]
+
+    # fake user agent
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0'
+    }
+
+    for sub in tqdm(
+        iterable=subreddits,
+        desc='Updating Reddit data',
+    ):
+        url = f'https://www.reddit.com/r/{sub}/about.json'
+
+        response = s.get(url=url, headers=headers)
+        data = response.json()['data']
+
+        file_path = os.path.join(BASE_DIR, 'reddit', sub)
+        write_json_files(file_path=file_path, data=data)
+
+
 def missing_arg():
     parser.print_help()
     raise SystemExit(1)
@@ -506,6 +532,10 @@ if __name__ == '__main__':
             name='readthedocs',
             target=update_readthedocs,
         ),
+        Thread(
+            name='reddit',
+            target=update_reddit,
+        )
     ]
 
     for thread in tqdm(
