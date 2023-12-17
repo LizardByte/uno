@@ -4,6 +4,7 @@ import json
 import os
 import pathlib
 from threading import Thread
+from typing import Union
 
 # lib imports
 import cloudscraper
@@ -13,6 +14,7 @@ from PIL import Image
 import requests
 from requests.adapters import HTTPAdapter
 import svgwrite
+from tqdm import tqdm
 
 # setup environment if running locally
 load_dotenv()
@@ -24,6 +26,16 @@ s.mount('https://', retry_adapter)
 
 # constants
 BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gh-pages')
+
+
+# custom print
+def debug_print(
+        *values: object,
+        sep: Union[str, None] = ' ',
+        end: Union[str, None] = '\n',
+):
+    if os.getenv('ACTIONS_RUNNER_DEBUG') or os.getenv('ACTIONS_STEP_DEBUG'):
+        print(*values, sep=sep, end=end)
 
 
 def save_image_from_url(file_path: str, file_extension: str, image_url: str, size_x: int = 0, size_y: int = 0):
@@ -43,7 +55,7 @@ def save_image_from_url(file_path: str, file_extension: str, image_url: str, siz
     size_y : int
         The ``y`` dimension to resize the image to. If used, ``size_x`` must also be defined.
     """
-    print(f'Saving image from {image_url}')
+    debug_print(f'Saving image from {image_url}')
     # determine the directory
     directory = os.path.dirname(file_path)
 
@@ -73,7 +85,7 @@ def write_json_files(file_path: str, data: any):
     data
         The dictionary data to write in the json file.
     """
-    print(f'Writing json file at {file_path}')
+    debug_print(f'Writing json file at {file_path}')
     # determine the directory
     directory = os.path.dirname(file_path)
 
@@ -87,11 +99,13 @@ def update_aur():
     """
     Cache and update data from aur API.
     """
-    print('Updating AUR data...')
     aur_base_url = 'https://aur.archlinux.org/rpc?v=5&type=info&arg='
     aur_repos = ['sunshine']
 
-    for repo in aur_repos:
+    for repo in tqdm(
+            iterable=aur_repos,
+            desc='Updating AUR data',
+    ):
         url = f'{aur_base_url}{repo}'
         response = s.get(url=url)
         data = response.json()
@@ -104,7 +118,6 @@ def update_codecov():
     """
     Get code coverage data from Codecov API.
     """
-    print('Updating Codecov data...')
     headers = dict(
         Accept='application/json',
         Authorization=f'bearer {args.codecov_token}',
@@ -117,8 +130,10 @@ def update_codecov():
     data = response.json()
     assert data['next'] is None, 'More than 500 repos found, need to implement pagination.'
 
-    for repo in data['results']:
-        print(f'Updating Codecov data for repo: {repo["name"]}')
+    for repo in tqdm(
+            iterable=data['results'],
+            desc='Updating Codecov data',
+    ):
         url = f'{base_url}/repos/{repo["name"]}'
         response = s.get(url=url, headers=headers)
         data = response.json()
@@ -131,13 +146,15 @@ def update_crowdin():
     """
     Cache and update data from Crowdin API, and generate completion graph.
     """
-    print('Updating Crowdin data...')
     client = CrowdinClient(token=args.crowdin_token)
 
     # automatically collect crowdin projects
     project_data = client.projects.list_projects()['data']
 
-    for project in project_data:
+    for project in tqdm(
+            iterable=project_data,
+            desc='Updating Crowdin data',
+    ):
         project_name = project['data']['name']
         project_id = project['data']['id']
         data = client.translation_status.get_project_progress(projectId=project_id)['data']
@@ -160,7 +177,6 @@ def update_crowdin():
             data.insert(0, data.pop(en_index))
 
         # generate translation and approval completion graph
-        print(f'Generating Crowdin graph for project: {project_name}')
         line_height = 32
         bar_height = 16
         svg_width = 500
@@ -180,7 +196,10 @@ def update_crowdin():
             fill: #999;
         }
         """)
-        for lang_base in data:
+        for lang_base in tqdm(
+                iterable=data,
+                desc=f'Generating Crowdin graph for project: {project_name}',
+        ):
             language = lang_base['data']
             g = dwg.add(dwg.g(
                 class_="svg-font",
@@ -233,21 +252,25 @@ def update_discord():
     """
     Cache and update data from Discord API.
     """
-    print('Updating Discord data...')
-    discord_url = f'https://discordapp.com/api/invites/{args.discord_invite}?with_counts=true'
+    discord_urls = [
+        f'https://discordapp.com/api/invites/{args.discord_invite}?with_counts=true',
+    ]
 
-    response = s.get(url=discord_url)
-    data = response.json()
+    for discord_url in tqdm(
+            iterable=discord_urls,
+            desc='Updating Discord data',
+    ):
+        response = s.get(url=discord_url)
+        data = response.json()
 
-    file_path = os.path.join(BASE_DIR, 'discord', 'invite')
-    write_json_files(file_path=file_path, data=data)
+        file_path = os.path.join(BASE_DIR, 'discord', 'invite')
+        write_json_files(file_path=file_path, data=data)
 
 
 def update_fb():
     """
     Get number of Facebook page likes and group members.
     """
-    print('Updating Facebook data...')
     fb_base_url = 'https://graph.facebook.com/'
 
     fb_endpoints = dict(
@@ -255,8 +278,10 @@ def update_fb():
         page=f'{args.facebook_page_id}/insights?metric=page_fans&access_token={args.facebook_token}'
     )
 
-    for key, value in fb_endpoints.items():
-        print(f'Updating Facebook {key} data...')
+    for key, value in tqdm(
+            iterable=fb_endpoints.items(),
+            desc='Updating Facebook data',
+    ):
         url = f'{fb_base_url}/{value}'
         response = requests.get(url=url)
 
@@ -277,7 +302,6 @@ def update_github():
     """
     Cache and update GitHub Repo banners.
     """
-    print('Updating GitHub data...')
     response = s.get(url=f'https://api.github.com/users/{args.github_repository_owner}/repos')
     repos = response.json()
 
@@ -289,8 +313,10 @@ def update_github():
     )
     url = 'https://api.github.com/graphql'
 
-    for repo in repos:
-        print(f'Updating GitHub {repo["name"]} data...')
+    for repo in tqdm(
+            iterable=repos,
+            desc='Updating GitHub data',
+    ):
         # languages
         response = s.get(url=repo['languages_url'], headers=headers)
         # if TypeError, API limit has likely been exceeded or possible issue with GitHub API...
@@ -326,15 +352,20 @@ def update_patreon():
     """
     Get patron count from Patreon.
     """
-    print('Updating Patreon data...')
-    patreon_url = 'https://www.patreon.com/api/campaigns/6131567'
+    patreon_urls = [
+        'https://www.patreon.com/api/campaigns/6131567',
+    ]
 
-    response = s.get(url=patreon_url)
+    for patreon_url in tqdm(
+            iterable=patreon_urls,
+            desc='Updating Patreon data',
+    ):
+        response = s.get(url=patreon_url)
 
-    data = response.json()['data']['attributes']
+        data = response.json()['data']['attributes']
 
-    file_path = os.path.join(BASE_DIR, 'patreon', 'LizardByte')
-    write_json_files(file_path=file_path, data=data)
+        file_path = os.path.join(BASE_DIR, 'patreon', 'LizardByte')
+        write_json_files(file_path=file_path, data=data)
 
 
 def readthedocs_loop(url: str, file_path: str) -> list:
@@ -375,19 +406,23 @@ def update_readthedocs():
     """
     Cache and update readthedocs info.
     """
-    print('Updating Readthedocs data...')
     url_base = 'https://readthedocs.org'
     url = f'{url_base}/api/v3/projects/'
 
     file_path = os.path.join(BASE_DIR, 'readthedocs', 'projects')
     projects = readthedocs_loop(url=url, file_path=file_path)
 
-    for project in projects:
-        print(f'Updating Readthedocs data for project: {project["slug"]}')
+    for project in tqdm(
+            iterable=projects,
+            desc='Updating Readthedocs data',
+    ):
         git_url = project['repository']['url']
         repo_name = git_url.rsplit('/', 1)[-1].rsplit('.git', 1)[0]
 
         for link in project['_links']:
+            if link == 'builds':
+                continue  # skip builds, too much data and too slow
+
             file_path = os.path.join(BASE_DIR, 'readthedocs', link, repo_name)
 
             url = project['_links'][link]
@@ -469,5 +504,8 @@ if __name__ == '__main__':
         ),
     ]
 
-    for thread in threads:
+    for thread in tqdm(
+            iterable=threads,
+            desc='Starting threads',
+    ):
         thread.start()
