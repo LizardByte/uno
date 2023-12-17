@@ -5,3 +5,4 @@ python-dotenv==1.0.0
 requests==2.31.0
 svgwrite==1.4.3
 tqdm==4.66.1
+unhandled_exit==1.0.0

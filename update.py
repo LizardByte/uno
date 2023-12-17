@@ -15,9 +15,13 @@ import requests
 from requests.adapters import HTTPAdapter
 import svgwrite
 from tqdm import tqdm
+import unhandled_exit
 
 # setup environment if running locally
 load_dotenv()
+
+# setup threading exception handling
+unhandled_exit.activate()
 
 # setup requests session
 s = cloudscraper.CloudScraper()  # CloudScraper inherits from requests.Session
