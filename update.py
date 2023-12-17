@@ -3,6 +3,7 @@ import argparse
 import json
 import os
 import pathlib
+from threading import Thread
 
 # lib imports
 import cloudscraper
@@ -433,11 +434,40 @@ if __name__ == '__main__':
             not args.readthedocs_token:
         missing_arg()
 
-    update_aur()
-    update_codecov()
-    update_crowdin()
-    update_discord()
-    update_fb()
-    update_github()
-    update_patreon()
-    update_readthedocs()
+    threads = [
+        Thread(
+            name='aur',
+            target=update_aur,
+        ),
+        Thread(
+            name='codecov',
+            target=update_codecov,
+        ),
+        Thread(
+            name='crowdin',
+            target=update_crowdin,
+        ),
+        Thread(
+            name='discord',
+            target=update_discord,
+        ),
+        Thread(
+            name='facebook',
+            target=update_fb,
+        ),
+        Thread(
+            name='github',
+            target=update_github,
+        ),
+        Thread(
+            name='patreon',
+            target=update_patreon,
+        ),
+        Thread(
+            name='readthedocs',
+            target=update_readthedocs,
+        ),
+    ]
+
+    for thread in threads:
+        thread.start()
