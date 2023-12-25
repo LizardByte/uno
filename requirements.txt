@@ -1,5 +1,5 @@
 cloudscraper==1.2.71
-crowdin-api-client==1.13.0
+crowdin-api-client==1.14.0
 Pillow==10.1.0
 python-dotenv==1.0.0
 requests==2.31.0
