@@ -1,1 +1,1 @@
-{"error": "Server Error (500)"}
+{"name": "winget-pkgs", "private": false, "updatestamp": "2024-02-24T13:44:06.470613Z", "author": {"service": "github", "username": "LizardByte", "name": "LizardByte"}, "language": null, "branch": "master", "active": false, "activated": false, "totals": null}
