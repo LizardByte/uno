@@ -306,8 +306,32 @@ def update_github():
     """
     Cache and update GitHub Repo banners.
     """
-    response = s.get(url=f'https://api.github.com/users/{args.github_repository_owner}/repos')
-    repos = response.json()
+    url = f'https://api.github.com/users/{args.github_repository_owner}/repos'
+    per_page = 100
+    repos = []
+
+    headers = dict(
+        accept='application/vnd.github.v3+json',
+    )
+
+    query_params = dict(
+        per_page=per_page,
+        page=1,
+    )
+
+    while True:
+        response = s.get(
+            url=url,
+            headers=headers,
+            params=query_params,
+        )
+        response_data = response.json()
+        repos.extend(response_data)
+
+        if len(response_data) < per_page:
+            break
+
+        query_params['page'] += 1
 
     file_path = os.path.join(BASE_DIR, 'github', 'repos')
     write_json_files(file_path=file_path, data=repos)
