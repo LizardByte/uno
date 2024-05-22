@@ -2,7 +2,7 @@ cloudscraper==1.2.71
 crowdin-api-client==1.15.1
 Pillow==10.3.0
 python-dotenv==1.0.1
-requests==2.31.0
+requests==2.32.2
 svgwrite==1.4.3
 tqdm==4.66.4
 unhandled_exit==1.0.0
