@@ -1,1 +1,1 @@
-{"Python": 9697}
+{"message": "API rate limit exceeded for user ID 108553330. If you reach out to GitHub Support for help, please include the request ID 6CD1:1466C2:2AF1975:525C655:66C54CCC and timestamp 2024-08-21 02:11:24 UTC.", "documentation_url": "https://docs.github.com/rest/overview/rate-limits-for-the-rest-api", "status": "403"}
