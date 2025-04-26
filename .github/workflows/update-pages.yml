@@ -1,22 +1,28 @@
 ---
 name: Update
+permissions:
+  contents: read
 
 on:
   pull_request:
-    branches: [master]
-    types: [opened, synchronize, reopened]
+    branches:
+      - master
+    types:
+      - opened
+      - synchronize
+      - reopened
   push:
-    branches: [master]
+    branches:
+      - master
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: "${{ github.workflow }}-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
   update:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,7 +48,7 @@ jobs:
           cp -f -r ./gh-pages-template/. ./gh-pages/
 
       - name: Upload Artifacts
-        if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
           name: gh-pages
@@ -52,7 +58,10 @@ jobs:
             !**/*.git
 
       - name: Deploy to gh-pages
-        if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') || (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}  # yamllint disable-line rule:line-length
+        if: >-
+          (github.event_name == 'push' && github.ref == 'refs/heads/master') ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch'
         uses: actions-js/push@v1.5
         with:
           github_token: ${{ secrets.GH_BOT_TOKEN }}
