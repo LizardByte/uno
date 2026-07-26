@@ -3,5 +3,5 @@
 This repo simply hosts language icons and random quotes as used in LizardByte projects.
 
 > [!CAUTION]
-> It is likely this repo will be archived/deleted in the future.
-> Recommend to use [devicon](https://github.com/devicons/devicon) instead.
+> This repo has been archived.
+> Recommend to use [shared-web](https://github.com/LizardByte/shared-web) instead.
